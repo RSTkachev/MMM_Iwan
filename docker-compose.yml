@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./api
+    container_name: wan_api
+    ports:
+      - "8000:8000"
+
+  ui:
+    build: ./ui
+    container_name: wan_ui
+    environment:
+      API_URL: "http://api:8000/inference_by_image"
+    ports:
+      - "7860:7860"
+    depends_on:
+      - api
