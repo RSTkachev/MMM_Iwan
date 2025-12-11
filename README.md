@@ -1,4 +1,4 @@
-# WAN Video Generator — Mock Service (API + UI)
+# WAN Video Generator
 
 Этот проект — минимальный, но полностью рабочий пример сервиса, который:
 
