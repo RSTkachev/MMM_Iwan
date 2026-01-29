@@ -33,7 +33,6 @@ def call_inference(image, prompt):
     # API возвращает video array
     video_np = np.array(r.json()["video"], dtype=np.uint8)
 
-    # ⬇️ КЛЮЧЕВОЕ: возвращаем массив напрямую
     return video_np
 
 
