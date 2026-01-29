@@ -2,31 +2,72 @@ import gradio as gr
 import requests
 import os
 
-API_URL = "http://localhost:8000/inference_by_image"
+API_URL = "http://localhost:8000/generate"
+DEMO_VIDEO_PATH = "result.mp4"
 
-def call_inference(image):
-    if image is None:
+
+def call_inference(image, prompt):
+    if image is None or not prompt:
         return None
 
-    # отправляем картинку
-    image.save("temp.png")
-    with open("temp.png", "rb") as f:
-        r = requests.post(API_URL, files={"image": ("temp.png", f, "image/png")})
+    image_path = "temp.png"
+    image.save(image_path)
 
-    # сохраняем видеофайл
-    video_path = "result.mp4"
+    payload = {
+        "image_path": os.path.abspath(image_path),
+        "prompt": prompt,
+        "width": 832,
+        "height": 480,
+        "num_frames": 121,
+    }
+
+    r = requests.post(API_URL, json=payload)
+    r.raise_for_status()
+
+    video_path = "generated.mp4"
     with open(video_path, "wb") as f:
         f.write(r.content)
 
-    return video_path  # отдаём Gradio путь к видео
+    return video_path
 
-app = gr.Interface(
-    fn=call_inference,
-    inputs=gr.Image(type="pil"),
-    outputs=gr.Video(),
-    title="WAN Video Generator",
-    description="Загружай картинку — получай видео"
-)
+
+def demo_inference(image, prompt):
+    """
+    Demo-режим:
+    всегда возвращает заранее заготовленное видео
+    """
+    if not os.path.exists(DEMO_VIDEO_PATH):
+        raise FileNotFoundError(
+            f"Demo video not found: {DEMO_VIDEO_PATH}"
+        )
+
+    return DEMO_VIDEO_PATH
+
+
+with gr.Blocks(title="WAN Video Generator") as app:
+    gr.Markdown("# WAN Video Generator")
+
+    with gr.Row():
+        image_input = gr.Image(type="pil", label="Input image")
+        prompt_input = gr.Textbox(label="Prompt")
+
+    with gr.Row():
+        generate_btn = gr.Button("Generate")
+        demo_btn = gr.Button("Demo")
+
+    video_output = gr.Video(label="Output video")
+
+    generate_btn.click(
+        fn=call_inference,
+        inputs=[image_input, prompt_input],
+        outputs=video_output,
+    )
+
+    demo_btn.click(
+        fn=demo_inference,
+        inputs=[image_input, prompt_input],
+        outputs=video_output,
+    )
 
 if __name__ == "__main__":
     app.launch(server_name="0.0.0.0")
