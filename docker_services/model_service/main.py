@@ -29,7 +29,7 @@ def load_model():
     
     vae = AutoencoderKLWan.from_pretrained(model_id, subfolder="vae", torch_dtype=torch.float32)
     model = WanImageToVideoPipeline.from_pretrained("Wan-AI/Wan2.2-TI2V-5B-Diffusers", torch_dtype=torch.bfloat16)
-    model.transformer.load_lora_adapter('./lora/epoch-12.safetensors', prefix=None)
+    model.transformer.load_lora_adapter('lora/epoch-12.safetensors', prefix=None)
     model.enable_model_cpu_offload() 
     
 

@@ -1,8 +1,14 @@
 import gradio as gr
 import requests
+import numpy as np
 import os
+from diffusers.utils import export_to_video
 
-API_URL = "http://localhost:8000/generate"
+API_URL = os.getenv(
+    "API_URL",
+    "http://wan_api:8000/generate"
+)
+
 DEMO_VIDEO_PATH = "result.mp4"
 
 
@@ -10,11 +16,11 @@ def call_inference(image, prompt):
     if image is None or not prompt:
         return None
 
-    image_path = "temp.png"
-    image.save(image_path)
+    # PIL -> numpy -> list
+    image_array = np.array(image, dtype=np.uint8).tolist()
 
     payload = {
-        "image_path": os.path.abspath(image_path),
+        "image": image_array,
         "prompt": prompt,
         "width": 832,
         "height": 480,
@@ -24,23 +30,15 @@ def call_inference(image, prompt):
     r = requests.post(API_URL, json=payload)
     r.raise_for_status()
 
-    video_path = "generated.mp4"
-    with open(video_path, "wb") as f:
-        f.write(r.content)
+    # API возвращает video array
+    video_np = np.array(r.json()["video"], dtype=np.uint8)
 
-    return video_path
+    # ⬇️ КЛЮЧЕВОЕ: возвращаем массив напрямую
+    return video_np
 
 
 def demo_inference(image, prompt):
-    """
-    Demo-режим:
-    всегда возвращает заранее заготовленное видео
-    """
-    if not os.path.exists(DEMO_VIDEO_PATH):
-        raise FileNotFoundError(
-            f"Demo video not found: {DEMO_VIDEO_PATH}"
-        )
-
+    # Demo оставляем файловым, Gradio это поддерживает
     return DEMO_VIDEO_PATH
 
 

@@ -2,32 +2,32 @@ import os
 import uuid
 import requests
 import numpy as np
-from diffusers.utils import export_to_video, load_image
+
 
 class ModelService:
     def __init__(self):
         self.output_dir = "./outputs"
         os.makedirs(self.output_dir, exist_ok=True)
 
-        self.wan_url = "http://localhost:11222/generate_video"
+        self.wan_url = "http://wan_model:11222/generate_video"
 
     def load(self):
         print("[ModelService] WAN proxy service ready")
 
     def predict(
         self,
-        image_path: str,
+        image: list | np.ndarray,
         prompt: str,
         negative_prompt: str | None,
         width: int,
         height: int,
         num_frames: int,
     ) -> str:
-        image = load_image(image_path)
-        image_array = np.array(image).tolist()
+        if isinstance(image, list):
+            image = np.array(image, dtype=np.uint8)
 
         payload = {
-            "image": image_array,
+            "image": image.tolist(),
             "prompt": prompt,
             "negative_prompt": negative_prompt,
             "width": width,
@@ -36,13 +36,14 @@ class ModelService:
         }
 
         response = requests.post(self.wan_url, json=payload)
-        response.raise_for_status()
+        # response.raise_for_status()
 
-        video_np = np.array(response.json()["video"])
+        # video_np = np.array(response.json()["video"])
 
-        out_path = os.path.join(
-            self.output_dir, f"{uuid.uuid4()}.mp4"
-        )
-        export_to_video(video_np, out_path, fps=24)
 
-        return out_path
+
+        video_np = np.array(response.json()["video"], dtype=np.uint8)
+
+        return video_np
+
+
