@@ -1,8 +1,12 @@
 import gradio as gr
 import requests
+import numpy as np
 import os
 
-API_URL = "http://localhost:8000/generate"
+API_URL = os.getenv(
+    "API_URL",
+    "http://localhost:8000/generate"
+)
 DEMO_VIDEO_PATH = "result.mp4"
 
 
@@ -10,11 +14,10 @@ def call_inference(image, prompt):
     if image is None or not prompt:
         return None
 
-    image_path = "temp.png"
-    image.save(image_path)
+    image_array = np.array(image).tolist()
 
     payload = {
-        "image_path": os.path.abspath(image_path),
+        "image": image_array,
         "prompt": prompt,
         "width": 832,
         "height": 480,
@@ -32,15 +35,6 @@ def call_inference(image, prompt):
 
 
 def demo_inference(image, prompt):
-    """
-    Demo-режим:
-    всегда возвращает заранее заготовленное видео
-    """
-    if not os.path.exists(DEMO_VIDEO_PATH):
-        raise FileNotFoundError(
-            f"Demo video not found: {DEMO_VIDEO_PATH}"
-        )
-
     return DEMO_VIDEO_PATH
 
 

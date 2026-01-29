@@ -2,7 +2,8 @@ import os
 import uuid
 import requests
 import numpy as np
-from diffusers.utils import export_to_video, load_image
+from diffusers.utils import export_to_video
+
 
 class ModelService:
     def __init__(self):
@@ -16,18 +17,18 @@ class ModelService:
 
     def predict(
         self,
-        image_path: str,
+        image_array: list | np.ndarray,
         prompt: str,
         negative_prompt: str | None,
         width: int,
         height: int,
         num_frames: int,
     ) -> str:
-        image = load_image(image_path)
-        image_array = np.array(image).tolist()
+        if isinstance(image_array, list):
+            image_array = np.array(image_array, dtype=np.uint8)
 
         payload = {
-            "image": image_array,
+            "image": image_array.tolist(),
             "prompt": prompt,
             "negative_prompt": negative_prompt,
             "width": width,
@@ -43,6 +44,7 @@ class ModelService:
         out_path = os.path.join(
             self.output_dir, f"{uuid.uuid4()}.mp4"
         )
+
         export_to_video(video_np, out_path, fps=24)
 
         return out_path
