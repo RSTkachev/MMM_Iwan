@@ -11,7 +11,7 @@ services:
     build: ./ui
     container_name: wan_ui
     environment:
-      API_URL: "http://api:8000/inference_by_image"
+      API_URL: "http://api:8000/generate"
     ports:
       - "7860:7860"
     depends_on:
