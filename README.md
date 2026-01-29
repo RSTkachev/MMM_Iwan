@@ -15,7 +15,6 @@ project/
 ├── api/ # FastAPI backend (генерация видео)
 │ ├── main.py # Основной HTTP-сервис
 │ ├── model_service.py # Логика инференса модели
-│ ├── video_*.mp4 # Видео-заглушка, имитирующее вывод модели
 │ ├── outputs/ # Папка, куда сохраняются сгенерированные ролики
 │ ├── requirements.txt # Python зависимости API
 │ └── Dockerfile # Docker-образ для backend
